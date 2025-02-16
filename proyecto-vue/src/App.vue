@@ -10,7 +10,7 @@ import GitHub from './components/GitHub.vue'
 <style scoped>
 h1{
   font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-  color:rgb(15, 14, 14);
+  color:rgb(57, 108, 238);;
   text-align: center;
 }
 </style>

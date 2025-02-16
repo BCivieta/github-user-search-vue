@@ -10,16 +10,15 @@
                 <img :src="avatar" alt="avatar del usuario">
                 <div class="login">{{ login }}</div> 
                 <div class="urlYboton">
-                    <a :href = "githubUrl" taget="_bank">URL de git Hub</a>
+                    <a :href = "githubUrl" target="_blank">URL de git Hub</a>
                     <button id="repositorios" @click="obtenerRepos">Ver repositorios</button>
                 </div>
-                <div v-if = "mostrarErrorRepos">No se han encontrado repositorios</div>
+                <div class="mensajeError" v-if = "mostrarErrorRepos">No se han encontrado repositorios</div>
             </div>
             <div v-if="mostrarRepos" class="datos2">
                 <GitHubRepo v-for="repo in repos" :key="repo.id" :repo="repo"></GitHubRepo>
             </div>
         </div>
-        
     </div>
 </template>
 
@@ -52,6 +51,8 @@ async function obtenerUsuario(event) {
         githubUrl.value = datos.html_url;
         mostrarDatos.value = true;
         mostrarError.value = false;
+        campoBusquedaDesactivado.value = false;
+        mostrarRepos.value = false;
     }
     catch (error){
         mostrarError.value = true;
@@ -61,18 +62,18 @@ async function obtenerUsuario(event) {
 async function obtenerRepos(event) {
     try{
         const respuesta = await fetch(`https://api.github.com/users/${usuario.value}/repos`)
+        console.log("Estado de la respuesta:", respuesta.status);
         if(!respuesta.ok){
             throw new Error("Repositorios no encontrados");
         }
         const datos = await respuesta.json();
         repos.value = datos;
         mostrarRepos.value = true;
-        mostrarErrorRepos = false;
+        mostrarErrorRepos.value = false;
     }catch(error){
         mostrarErrorRepos.value = true;
         mostrarRepos.value = false;
     }
-    
 }
 </script>
 
@@ -83,10 +84,16 @@ display:flex;
 flex-direction: column;
 width: 100%;
 align-items: center;
+justify-content: center;
 }
 .buscador{
     margin-bottom: 20px;
-    width: 100%;
+    width: 94%;
+    background-color: rgb(104, 143, 244);
+    border-radius: 10px;
+    border:solid 1px  rgb(11, 77, 243);
+    padding: 20px;
+    color: white;
 }
 .bloque{
     display: inline-block;
@@ -99,8 +106,19 @@ input{
     text-align: left;
     width: 200px;
     border-radius: 5px;
+    border-color: rgb(11, 77, 243);
     border-width: 1px;
     padding:6px;
+}
+.mensajeError{
+    margin-top: 10px;
+    color:white;
+    border: solid 1px red;
+    border-radius: 10px;
+    background-color:rgb(243, 111, 111);
+    width: 90%;
+    text-align: center;
+    padding: 15px;
 }
 .login{
     margin-top: 10px;
@@ -128,11 +146,12 @@ button{
 }
 .datos1{
     flex-direction: row;
-    
+    border:solid 1px black;
+    border-radius: 10px;
+    padding: 50px;
 }
 .datos2{
     flex-direction: row;
     width: 60%;
 }
-
 </style>
