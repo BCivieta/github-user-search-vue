@@ -47,7 +47,7 @@ async function obtenerUsuario(event) {
     mostrarErrorApi.value = false;
     mostrarRepos.value = false;
     try{
-        //const respuesta = await fetch (`https://api.github.com/users/${usuario.value}`)
+        const respuesta = await fetch (`https://api.github.com/users/${usuario.value}`)
         if(!respuesta.ok){
             campoBusquedaDesactivado.value = false;
             if(respuesta.status === 404){
