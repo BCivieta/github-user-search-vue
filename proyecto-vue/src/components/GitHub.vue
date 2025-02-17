@@ -2,18 +2,19 @@
     <div class="componente">
         <div class="buscador">
             <label class="bloque" for="usuario">Introduce un nombre de usuario:</label>
-            <input type="text" id="ususario" :disabled="campoBusquedaDesactivado" @keydown.enter="obtenerUsuario">
-            <p v-if="mostrarError" class="mensajeError">El nombre de usuario no existe</p>
+            <input type="text" id="usuario" :disabled="campoBusquedaDesactivado" @keydown.enter="obtenerUsuario">
+            <p v-if="mostrarError" class="mensajeError">El usuario no existe</p>
+            <p v-if="mostrarErrorApi" class="mensajeError">Error al conectar con la API de GitHub</p>
         </div>
         <div class="datos">
             <div v-if="mostrarDatos" class="datos1">
                 <img :src="avatar" alt="avatar del usuario">
                 <div class="login">{{ login }}</div> 
                 <div class="urlYboton">
-                    <a :href = "githubUrl" target="_blank">URL de git Hub</a>
+                    <a :href="githubUrl" target="_blank">URL de GitHub</a>
                     <button id="repositorios" @click="obtenerRepos">Ver repositorios</button>
                 </div>
-                <div class="mensajeError" v-if = "mostrarErrorRepos">No se han encontrado repositorios</div>
+                <div class="mensajeError" v-if = "mostrarErrorRepos">El usuario no tiene repositorios</div>
             </div>
             <div v-if="mostrarRepos" class="datos2">
                 <GitHubRepo v-for="repo in repos" :key="repo.id" :repo="repo"></GitHubRepo>
@@ -27,6 +28,7 @@ import { ref } from 'vue';
 import GitHubRepo from './GitHubRepo.vue';
 
 const mostrarError = ref(false);
+const mostrarErrorApi = ref(false);
 const mostrarErrorRepos = ref(false);
 const mostrarDatos = ref(false);
 const mostrarRepos = ref(false);
@@ -40,38 +42,58 @@ const repos = ref([]);
 async function obtenerUsuario(event) {
     usuario.value = event.target.value;
     campoBusquedaDesactivado.value = true;
+    mostrarError.value = false;
+    mostrarErrorRepos.value = false;
+    mostrarErrorApi.value = false;
+    mostrarRepos.value = false;
     try{
-        const respuesta = await fetch (`https://api.github.com/users/${usuario.value}`)
+        //const respuesta = await fetch (`https://api.github.com/users/${usuario.value}`)
         if(!respuesta.ok){
-            throw new Error ("Usuario no encontrado");
+            campoBusquedaDesactivado.value = false;
+            if(respuesta.status === 404){
+                throw new Error ("Usuario no existe");
+            }
+            throw new Error("Error conexión");
         }
         const datos = await respuesta.json();
         avatar.value = datos.avatar_url;
         login.value = datos.login;
         githubUrl.value = datos.html_url;
         mostrarDatos.value = true;
-        mostrarError.value = false;
         campoBusquedaDesactivado.value = false;
         mostrarRepos.value = false;
     }
     catch (error){
-        mostrarError.value = true;
+        console.log(error.message);
+        if(error.message=== "Usuario no existe"){
+            mostrarError.value = true;
+        }else{
+            mostrarErrorApi.value = true;
+        }
         mostrarDatos.value = false;
     }   
 }
-async function obtenerRepos(event) {
+async function obtenerRepos() {
     try{
         const respuesta = await fetch(`https://api.github.com/users/${usuario.value}/repos`)
-        console.log("Estado de la respuesta:", respuesta.status);
         if(!respuesta.ok){
-            throw new Error("Repositorios no encontrados");
-        }
+            console.log("!respuesta.ok");
+            throw new Error("No encontrados");  
+        } 
         const datos = await respuesta.json();
+        if(datos.length === 0){
+            throw new Error("No hay repositorios")
+        }
         repos.value = datos;
         mostrarRepos.value = true;
-        mostrarErrorRepos.value = false;
+        
     }catch(error){
-        mostrarErrorRepos.value = true;
+        console.log(error.message);
+        if(error.message==="No hay repositorios"){
+            mostrarErrorRepos.value = true;
+        }else{
+            mostrarErrorApi.value = true;
+        }
         mostrarRepos.value = false;
     }
 }
