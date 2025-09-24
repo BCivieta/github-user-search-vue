@@ -12,5 +12,6 @@ h1{
   font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   color:rgb(57, 108, 238);;
   text-align: center;
+  font-size: 50px;
 }
 </style>
